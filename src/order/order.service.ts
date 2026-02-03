@@ -95,7 +95,8 @@ export class OrderService {
   }
 
   async findAll() {
-    const orders = (await this.orderRepository.findAll()) as OrderWithProducts[];
+    const orders =
+      (await this.orderRepository.findAll()) as OrderWithProducts[];
     // Calcular total para cada pedido e serializar
     return Promise.all(
       orders.map(async (order) => {
@@ -106,7 +107,9 @@ export class OrderService {
   }
 
   async findOne(id: string) {
-    const order = (await this.orderRepository.findOne(id)) as OrderWithProducts | null;
+    const order = (await this.orderRepository.findOne(
+      id,
+    )) as OrderWithProducts | null;
     if (!order) {
       throw new NotFoundException(`Order with ID ${id} not found`);
     }
@@ -168,7 +171,7 @@ export class OrderService {
         id,
       )) as OrderWithProducts;
       const total = await this.orderRepository.calculateTotal(id);
-      return this.serializeOrderResponse(updatedOrder!, total);
+      return this.serializeOrderResponse(updatedOrder, total);
     }
 
     return order;

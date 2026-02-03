@@ -68,9 +68,7 @@ describe('OrderService', () => {
   };
 
   const createOrderDto = {
-    products: [
-      { productId: 'product-uuid-1', quantity: 2 },
-    ],
+    products: [{ productId: 'product-uuid-1', quantity: 2 }],
   };
 
   beforeEach(async () => {
@@ -190,10 +188,7 @@ describe('OrderService', () => {
 
   describe('findAll', () => {
     it('should return all orders', async () => {
-      const mockOrders = [
-        mockOrder,
-        { ...mockOrder, id: 'order-uuid-2' },
-      ];
+      const mockOrders = [mockOrder, { ...mockOrder, id: 'order-uuid-2' }];
       orderRepository.findAll.mockResolvedValue(mockOrders);
       orderRepository.calculateTotal.mockResolvedValue(199.98);
 
