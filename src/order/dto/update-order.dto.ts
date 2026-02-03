@@ -1,9 +1,14 @@
-import { PartialType } from '@nestjs/mapped-types';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsOptional } from 'class-validator';
 import { OrderStatus } from '../../generated/prisma/client';
-import { CreateOrderDto } from './create-order.dto';
 
-export class UpdateOrderDto extends PartialType(CreateOrderDto) {
+export class UpdateOrderDto {
+  @ApiPropertyOptional({
+    description: 'Status do pedido',
+    enum: OrderStatus,
+    enumName: 'OrderStatus',
+    example: 'CONCLUIDO',
+  })
   @IsOptional()
   @IsEnum(OrderStatus)
   status?: OrderStatus;

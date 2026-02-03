@@ -67,14 +67,31 @@ export class OrderRepository implements IOrderRepository {
       return 0;
     }
 
-    const total = order.orderProducts.reduce((sum: number, orderProduct: { price_at_purchase: unknown; quantity: number }) => {
-      return sum + Number(orderProduct.price_at_purchase) * orderProduct.quantity;
-    }, 0);
+    const total = order.orderProducts.reduce(
+      (
+        sum: number,
+        orderProduct: { price_at_purchase: unknown; quantity: number },
+      ) => {
+        return (
+          sum + Number(orderProduct.price_at_purchase) * orderProduct.quantity
+        );
+      },
+      0,
+    );
 
     return total;
   }
 
-  async findWithProducts(id: string): Promise<Order & { orderProducts: Array<{ product: any; quantity: number; price_at_purchase: any }> } | null> {
+  async findWithProducts(id: string): Promise<
+    | (Order & {
+        orderProducts: Array<{
+          product: any;
+          quantity: number;
+          price_at_purchase: any;
+        }>;
+      })
+    | null
+  > {
     return this.prisma.order.findUnique({
       where: { id },
       include: {

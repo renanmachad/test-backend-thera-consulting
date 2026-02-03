@@ -12,10 +12,15 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.useGlobalPipes(new ValidationPipe());
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('')
-    .setDescription('')
+    .setTitle('E-commerce API')
+    .setDescription(
+      'API REST para gerenciamento de produtos e pedidos de e-commerce. ' +
+        'Permite operações CRUD em produtos, criação e gerenciamento de pedidos com controle de estoque.',
+    )
     .setVersion('1.0')
-    .addTag('Ecommerce')
+    .addTag('Health', 'Verificação de saúde da API')
+    .addTag('Products', 'Gerenciamento de produtos')
+    .addTag('Orders', 'Gerenciamento de pedidos')
     .build();
 
   const documentConfig: SwaggerDocumentOptions = {

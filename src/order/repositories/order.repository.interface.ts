@@ -6,5 +6,14 @@ export interface IOrderRepository {
   findOne(id: string): Promise<Order | null>;
   updateStatus(id: string, status: OrderStatus): Promise<Order>;
   calculateTotal(id: string): Promise<number>;
-  findWithProducts(id: string): Promise<Order & { orderProducts: Array<{ product: any; quantity: number; price_at_purchase: any }> } | null>;
+  findWithProducts(id: string): Promise<
+    | (Order & {
+        orderProducts: Array<{
+          product: any;
+          quantity: number;
+          price_at_purchase: any;
+        }>;
+      })
+    | null
+  >;
 }

@@ -4,14 +4,32 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
-  OrderStatus,
-  Prisma,
-  Product,
-} from '../generated/prisma/client';
+  serializeOrder,
+  serializeOrderProduct,
+  toNumber,
+} from '../common/helpers/decimal.helper';
+import { OrderStatus, Prisma, Product } from '../generated/prisma/client';
 import { ProductRepository } from '../product/repositories/product.repository';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { OrderRepository } from './repositories/order.repository';
+
+// Tipo para Order com orderProducts incluídos
+interface OrderWithProducts {
+  id: string;
+  status: OrderStatus;
+  total_order: unknown;
+  createdAt: Date;
+  updatedAt: Date;
+  orderProducts: Array<{
+    id: string;
+    orderId: string;
+    productId: string;
+    quantity: number;
+    price_at_purchase: unknown;
+    product?: Product;
+  }>;
+}
 
 @Injectable()
 export class OrderService {
@@ -53,7 +71,7 @@ export class OrderService {
           connect: { id: item.productId },
         },
         quantity: item.quantity,
-        price_at_purchase: Number(product.price),
+        price_at_purchase: toNumber(product.price),
       });
     }
 
@@ -65,43 +83,36 @@ export class OrderService {
       },
     };
 
-    const order = await this.orderRepository.create(orderData);
+    const order = (await this.orderRepository.create(
+      orderData,
+    )) as OrderWithProducts;
 
     // Calcular e atualizar total
     const total = await this.orderRepository.calculateTotal(order.id);
     await this.orderRepository.updateStatus(order.id, order.status);
 
-    return {
-      ...order,
-      total_order: total,
-    };
+    return this.serializeOrderResponse(order, total);
   }
 
   async findAll() {
-    const orders = await this.orderRepository.findAll();
-    // Calcular total para cada pedido
+    const orders = (await this.orderRepository.findAll()) as OrderWithProducts[];
+    // Calcular total para cada pedido e serializar
     return Promise.all(
       orders.map(async (order) => {
         const total = await this.orderRepository.calculateTotal(order.id);
-        return {
-          ...order,
-          total_order: total,
-        };
+        return this.serializeOrderResponse(order, total);
       }),
     );
   }
 
   async findOne(id: string) {
-    const order = await this.orderRepository.findOne(id);
+    const order = (await this.orderRepository.findOne(id)) as OrderWithProducts | null;
     if (!order) {
       throw new NotFoundException(`Order with ID ${id} not found`);
     }
 
     const total = await this.orderRepository.calculateTotal(id);
-    return {
-      ...order,
-      total_order: total,
-    };
+    return this.serializeOrderResponse(order, total);
   }
 
   async update(id: string, updateOrderDto: UpdateOrderDto) {
@@ -115,7 +126,6 @@ export class OrderService {
       const orderWithProducts = await this.orderRepository.findWithProducts(id);
 
       if (orderWithProducts) {
-        // Os produtos já vêm no relacionamento, não precisa buscar novamente
         for (const orderProduct of orderWithProducts.orderProducts) {
           const product = orderProduct.product as Product;
           if (product) {
@@ -140,7 +150,6 @@ export class OrderService {
       const orderWithProducts = await this.orderRepository.findWithProducts(id);
 
       if (orderWithProducts) {
-        // Os produtos já vêm no relacionamento, não precisa buscar novamente
         for (const orderProduct of orderWithProducts.orderProducts) {
           const product = orderProduct.product as Product;
           if (product) {
@@ -153,7 +162,13 @@ export class OrderService {
     }
 
     if (updateOrderDto.status) {
-      return this.orderRepository.updateStatus(id, updateOrderDto.status);
+      await this.orderRepository.updateStatus(id, updateOrderDto.status);
+      // Buscar o pedido atualizado com produtos
+      const updatedOrder = (await this.orderRepository.findOne(
+        id,
+      )) as OrderWithProducts;
+      const total = await this.orderRepository.calculateTotal(id);
+      return this.serializeOrderResponse(updatedOrder!, total);
     }
 
     return order;
@@ -161,9 +176,22 @@ export class OrderService {
 
   async remove(id: string) {
     await this.findOne(id);
-    // Em produção, você pode querer soft delete ou verificar se pode deletar
     throw new BadRequestException(
       'Order deletion is not allowed. Use cancel status instead.',
     );
+  }
+
+  /**
+   * Serializa a resposta do pedido convertendo Decimals para numbers
+   */
+  private serializeOrderResponse(order: OrderWithProducts, total: number) {
+    return serializeOrder({
+      id: order.id,
+      status: order.status,
+      total_order: total,
+      createdAt: order.createdAt,
+      updatedAt: order.updatedAt,
+      orderProducts: order.orderProducts.map((op) => serializeOrderProduct(op)),
+    });
   }
 }
