@@ -12,7 +12,8 @@ export class AppController {
   @Public()
   @ApiOperation({
     summary: 'Health check',
-    description: 'Verifica se a API está funcionando corretamente (rota pública)',
+    description:
+      'Verifica se a API está funcionando corretamente (rota pública)',
   })
   @ApiResponse({
     status: 200,

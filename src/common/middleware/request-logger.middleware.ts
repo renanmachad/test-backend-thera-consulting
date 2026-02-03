@@ -89,7 +89,8 @@ export class RequestLoggerMiddleware implements NestMiddleware {
       ip,
       userAgent,
       headers: sanitizedHeaders,
-      query: Object.keys(sanitizedQuery).length > 0 ? sanitizedQuery : undefined,
+      query:
+        Object.keys(sanitizedQuery).length > 0 ? sanitizedQuery : undefined,
       body: Object.keys(sanitizedBody).length > 0 ? sanitizedBody : undefined,
     };
 
@@ -188,7 +189,7 @@ export class RequestLoggerMiddleware implements NestMiddleware {
       if (SENSITIVE_FIELDS.some((field) => lowerKey.includes(field))) {
         sanitized[key] = '[REDACTED]';
       } else if (Array.isArray(value)) {
-        sanitized[key] = value.map((item) =>
+        sanitized[key] = value.map((item: unknown): unknown =>
           typeof item === 'object' && item !== null
             ? this.deepSanitize(item as Record<string, unknown>)
             : item,
