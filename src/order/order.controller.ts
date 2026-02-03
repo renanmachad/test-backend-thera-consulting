@@ -9,11 +9,13 @@ import {
   Post,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiTags,
   ApiOperation,
   ApiResponse,
   ApiParam,
   ApiBody,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
@@ -26,6 +28,8 @@ import {
 } from '../common/dto/error-response.dto';
 
 @ApiTags('Orders')
+@ApiBearerAuth('api-key')
+@ApiUnauthorizedResponse({ description: 'API key inválida ou não fornecida' })
 @Controller('order')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}

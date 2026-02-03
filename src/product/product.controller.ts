@@ -9,11 +9,13 @@ import {
   ParseUUIDPipe,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiTags,
   ApiOperation,
   ApiResponse,
   ApiParam,
   ApiBody,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -25,6 +27,8 @@ import {
 } from '../common/dto/error-response.dto';
 
 @ApiTags('Products')
+@ApiBearerAuth('api-key')
+@ApiUnauthorizedResponse({ description: 'API key inválida ou não fornecida' })
 @Controller('product')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
