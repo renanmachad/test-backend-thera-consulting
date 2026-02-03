@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model OrderProduct {
+  id                String   @id @default(uuid())
+  orderId           String
+  productId         String
+  quantity          Int
+  price_at_purchase Decimal  @db.Decimal(10, 2)
+  order             Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product           Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([orderId, productId])
+  @@map("order_products")
+}
+
+model Order {
+  id            String         @id @default(uuid())
+  status        OrderStatus    @default(PENDENTE)
+  total_order   Decimal        @default(0) @db.Decimal(10, 2)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  orderProducts OrderProduct[]
+
+  @@map("orders")
+}
+
+model Product {
+  id             String         @id @default(uuid())
+  name           String
+  category       String
+  description    String
+  price          Decimal        @db.Decimal(10, 2)
+  quantity_stock Int
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  orderProducts  OrderProduct[]
+
+  @@map("products")
+}
+
+enum OrderStatus {
+  PENDENTE
+  CONCLUIDO
+  CANCELADO
+}
