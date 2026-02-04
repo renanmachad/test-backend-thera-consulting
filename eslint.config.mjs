@@ -19,7 +19,9 @@ export default tseslint.config(
       },
       sourceType: 'commonjs',
       parserOptions: {
-        projectService: true,
+        projectService: {
+          allowDefaultProject: ['sst.config.ts'],
+        },
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -40,6 +42,16 @@ export default tseslint.config(
     files: ['**/*.spec.ts', '**/*.test.ts'],
     rules: {
       '@typescript-eslint/unbound-method': 'off',
+    },
+  },
+  // Disable type-checking for SST config file
+  {
+    files: ['sst.config.ts'],
+    rules: {
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
     },
   },
 );

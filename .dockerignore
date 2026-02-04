@@ -57,3 +57,7 @@ Thumbs.db
 
 # Prisma (keep schema, ignore generated)
 src/generated
+
+
+# sst
+.sst
